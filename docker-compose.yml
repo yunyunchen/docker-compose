@@ -1,0 +1,50 @@
+version: '2'
+services:
+
+    web:
+        build: ./docker/php
+        volumes:
+            - ./:/var/www/html/
+            - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+        links:
+            - mysql
+            - mongo
+        #environment:
+         #   ENABLE_ENV_FILE: 1
+          #  ENABLE_LOCALCONF: 1
+           # API_TOKEN: "933b20f809b20f80d89c9da03c9da03c9d933b20"
+        expose:
+            - 9000
+
+    nginx:
+        build: ./docker/nginx
+        ports:
+            - "4488:443"
+            - "4480:80"
+        links:
+            - web
+        volumes_from:
+            - web
+
+    mysql:
+        image: mysql:5.6
+        ports:
+            - "3317:3306"
+        expose:
+            - "3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: web
+            MYSQL_USER: web
+            MYSQL_PASSWORD: web
+        volumes:
+            - ./docker/mysql:/var/lib/mysql
+            - ./docker/mysql/mysql.cfg:/etc/mysql/conf.d/mysql.cfg
+        # Autostart at boottime
+        #restart: always
+    mongo:
+        image: mongo:latest
+        ports:
+            - "27777:27017"
+        expose:
+            - "27017"
